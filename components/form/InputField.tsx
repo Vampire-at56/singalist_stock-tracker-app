@@ -1,9 +1,18 @@
-import React from 'react'
-import {Label} from '@/components/ui/label';
+import type { FieldValues } from 'react-hook-form';
 import {Input} from "@/components/ui/input";
 import {cn} from "@/lib/utils";
 
-const InputField = ({name, label, placeholder, type="text", register, error, validation, disabled, value}:FormInputProps) => {
+const InputField = <TFieldValues extends FieldValues>({
+    name,
+    label,
+    placeholder,
+    type = "text",
+    register,
+    error,
+    validation,
+    disabled,
+    value
+}: FormInputProps<TFieldValues>) => {
     return (
         <div className="space-y-2">
             <label htmlFor={name} className="form-label">
@@ -11,7 +20,7 @@ const InputField = ({name, label, placeholder, type="text", register, error, val
 
             </label>
             <Input
-            type={name}
+            type={type}
             id={name}
             placeholder={placeholder}
             disabled={disabled}

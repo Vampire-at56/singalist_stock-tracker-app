@@ -1,3 +1,5 @@
+import type { Control, FieldError, FieldPath, FieldValues, RegisterOptions, UseFormRegister } from 'react-hook-form';
+
 declare global {
     type SignInFormData = {
         email: string;
@@ -14,22 +16,22 @@ declare global {
         preferredIndustry: string;
     };
 
-    type CountrySelectProps = {
-        name: string;
+    type CountrySelectProps<TFieldValues extends FieldValues = FieldValues> = {
+        name: FieldPath<TFieldValues>;
         label: string;
-        control: Control;
+        control: Control<TFieldValues>;
         error?: FieldError;
         required?: boolean;
     };
 
-    type FormInputProps = {
-        name: string;
+    type FormInputProps<TFieldValues extends FieldValues = FieldValues> = {
+        name: FieldPath<TFieldValues>;
         label: string;
         placeholder: string;
         type?: string;
-        register: UseFormRegister;
+        register: UseFormRegister<TFieldValues>;
         error?: FieldError;
-        validation?: RegisterOptions;
+        validation?: RegisterOptions<TFieldValues, FieldPath<TFieldValues>>;
         disabled?: boolean;
         value?: string;
     };
@@ -39,12 +41,12 @@ declare global {
         label: string;
     };
 
-    type SelectFieldProps = {
-        name: string;
+    type SelectFieldProps<TFieldValues extends FieldValues = FieldValues> = {
+        name: FieldPath<TFieldValues>;
         label: string;
         placeholder: string;
         options: readonly Option[];
-        control: Control;
+        control: Control<TFieldValues>;
         error?: FieldError;
         required?: boolean;
     };
@@ -166,15 +168,6 @@ declare global {
 
     type WatchlistNewsProps = {
         news?: MarketNewsArticle[];
-    };
-
-    type SearchCommandProps = {
-        open?: boolean;
-        setOpen?: (open: boolean) => void;
-        renderAs?: 'button' | 'text';
-        buttonLabel?: string;
-        buttonVariant?: 'primary' | 'secondary';
-        className?: string;
     };
 
     type AlertData = {

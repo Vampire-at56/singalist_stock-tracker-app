@@ -15,7 +15,7 @@ const useTrendingViewWidget = (
         if (containerRef.current.dataset.loaded) return;
 
         containerRef.current.innerHTML =
-            '<div class="trendingview-widget-container__widget" style="width:100%; height:100%"></div>';
+            '<div class="tradingview-widget-container__widget" style="width:100%; height:100%"></div>';
 
         const script = document.createElement("script");
         script.src = scriptUrl;

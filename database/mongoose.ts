@@ -2,6 +2,16 @@ import mongoose from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
+function redactMongoUri(uri: string) {
+    try {
+        const u = new URL(uri);
+        if (u.password) u.password = "***";
+        return u.toString();
+    } catch {
+        return "<invalid MongoDB URI>";
+    }
+}
+
 declare global {
     var mongooseCache: {
         conn : typeof mongoose | null;
@@ -28,5 +38,6 @@ export const  connectToDatabase = async () => {
         cached.promise = null;
         throw err;
     }
-    console.log(`Connected to database... ${process.env.NODE_ENV} - ${MONGODB_URI}`);
+    console.log(`Connected to database... ${process.env.NODE_ENV} - ${redactMongoUri(MONGODB_URI)}`);
+    return cached.conn;
 }

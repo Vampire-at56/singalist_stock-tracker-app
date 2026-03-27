@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState } from 'react';
-import { Control, Controller, FieldError } from 'react-hook-form';
+import { Controller, type FieldValues } from 'react-hook-form';
 import {
     Popover,
     PopoverContent,
@@ -21,14 +20,6 @@ import { Label } from '@/components/ui/label';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import countryList from 'react-select-country-list';
-
-type CountrySelectProps = {
-    name: string;
-    label: string;
-    control: Control<any>;
-    error?: FieldError;
-    required?: boolean;
-};
 
 const CountrySelect = ({
                            value,
@@ -115,13 +106,13 @@ const CountrySelect = ({
     );
 };
 
-export const CountrySelectField = ({
-                                       name,
-                                       label,
-                                       control,
-                                       error,
-                                       required = false,
-                                   }: CountrySelectProps) => {
+export const CountrySelectField = <TFieldValues extends FieldValues>({
+    name,
+    label,
+    control,
+    error,
+    required = false,
+}: CountrySelectProps<TFieldValues>) => {
     return (
         <div className='space-y-2'>
             <Label htmlFor={name} className='form-label'>
@@ -134,7 +125,10 @@ export const CountrySelectField = ({
                     required: required ? `Please select ${label.toLowerCase()}` : false,
                 }}
                 render={({ field }) => (
-                    <CountrySelect value={field.value} onChange={field.onChange} />
+                    <CountrySelect
+                        value={typeof field.value === 'string' ? field.value : ''}
+                        onChange={(value) => field.onChange(value)}
+                    />
                 )}
             />
             {error && <p className='text-sm text-red-500'>{error.message}</p>}

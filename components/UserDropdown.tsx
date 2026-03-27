@@ -12,19 +12,29 @@ import {useRouter} from "next/navigation";
 import {Button} from "@/components/ui/button";
 import {LogOut} from "lucide-react";
 import NavItems from "@/components/Navitems";
-import Navitems from "@/components/Navitems";
-import {NAV_ITEMS} from "@/lib/constants";
+import { signOut } from "@/lib/actions/auth.actions";
 
 
-const UserDropdown = () => {
+type UserDropdownProps = {
+    user: { name: string; email: string } | null;
+};
+
+const UserDropdown = ({ user }: UserDropdownProps) => {
     const router = useRouter();
     const handleSignOut = async () => {
-        router.push("/signin");
+        await signOut();
+        router.refresh();
+        router.push("/sign-in");
     }
-    const user = {name: 'Jhon', Email: 'contact@gmail.com'};
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
+
+    if(!user){
+        return (
+            <Button onClick={() => router.push("/sign-in")} className="yellow-btn">
+                Sign In
+            </Button>
+        )
+    }
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -56,7 +66,7 @@ const UserDropdown = () => {
                         <span className="text-base font-medium text-gray-400">
                             {user.name}
                         </span>
-                            <span className="text-sm text-gray-400">{user.Email}</span>
+                            <span className="text-sm text-gray-400">{user.email}</span>
 
                         </div>
 

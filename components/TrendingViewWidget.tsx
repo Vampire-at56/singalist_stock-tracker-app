@@ -1,20 +1,18 @@
 "use client";
 
-import React, {  memo } from 'react';
+import { memo } from 'react';
 import useTrendingViewWidget from "@/hooks/useTrendingViewWidget";
+import {cn} from "@/lib/utils";
 
 interface TrendingViewWidgetProps {
     title?: string;
-    scriptUrl?: string;
+    scriptUrl: string;
     config: Record<string, unknown>;
     height?: number;
     className?: string;
 }
-import UseTrendingViewWidget from "@/hooks/useTrendingViewWidget";
-import {cn} from "@/lib/utils";
 
 const TradingViewWidget =({title, scriptUrl, config, height = 600, className}:TrendingViewWidgetProps) => {
-    // @ts-ignore
     const containerRef = useTrendingViewWidget(scriptUrl, config, height);
 
 
@@ -22,9 +20,14 @@ const TradingViewWidget =({title, scriptUrl, config, height = 600, className}:Tr
     return (
         <div className="w-full">
             {title && <h3 className="font-semibold text-2xl text-gray-100 mb-5">{title}</h3> }
-            <div className={cn( 'trandingview - widget - container', className)} ref={containerRef}>
-                <div className="trandingview-widget-container__widget" style={{ height, width: "100%" }}/>
-                <div className="trandingview-widget-copyright"><a href="https://www.tradingview.com/symbols/NASDAQ-AAPL/" rel="noopener nofollow" target="_blank"><span className="blue-text">AAPL stock chart</span></a><span className="trademark"> by TradingView</span></div>
+            <div className={cn('tradingview-widget-container', className)} ref={containerRef}>
+                <div className="tradingview-widget-container__widget" style={{ height, width: "100%" }}/>
+                <div className="tradingview-widget-copyright">
+                    <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">
+                        <span className="blue-text">Charts</span>
+                    </a>
+                    <span className="trademark"> by TradingView</span>
+                </div>
             </div>
         </div>
 
