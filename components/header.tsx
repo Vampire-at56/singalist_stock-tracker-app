@@ -4,12 +4,15 @@ import Navitems from "@/components/Navitems";
 import UserDropdown from "@/components/UserDropdown";
 import { headers } from "next/headers";
 import { getAuth } from "@/lib/better-auth/auth";
+import {searchStocks} from "@/lib/actions/finnhub.actions";
 
 const Header = async () => {
     const h = await headers();
     const auth = await getAuth();
     const session = await auth.api.getSession({ headers: h }).catch(() => null);
     const user = session?.user ?? null;
+
+    const initialStocks = await searchStocks();
 
     return (
         <header className="sticky top-0 header">
@@ -18,9 +21,9 @@ const Header = async () => {
                     <Image src="/assets/icons/logo.svg" alt="Signalist logo" width={140} height={32} className="h-8 w-auto cursor-pointer" />
                 </Link>
                 <nav className="hidden sm:block">
-                    <Navitems />
+                    <Navitems initialStocks={initialStocks}/>
                 </nav>
-                <UserDropdown user={user} />
+                <UserDropdown user={user} initialStocks={initialStocks}/>
 
             </div>
         </header>

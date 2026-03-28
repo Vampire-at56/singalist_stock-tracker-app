@@ -115,7 +115,7 @@ export async function getNews(symbols?: string[]): Promise<MarketNewsArticle[]> 
     }
 }
 
-export const searchStocks = cache(async (query?: string): Promise<StockWithWatchlistStatus[]> => {
+export const searchStocks = cache(async (query?: string) => {
     try {
         const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
         if (!token) {
@@ -124,67 +124,60 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
             return [];
         }
 
-        const trimmed = typeof query === 'string' ? query.trim() : '';
+        const trimmedQuery = typeof query === 'string' ? query.trim() : '';
 
         type FinnhubProfile2Response = {
             name?: string;
-            ticker?: string;
             exchange?: string;
         };
 
-        type SearchResultWithExchange = FinnhubSearchResult & { exchange?: string };
+        type FinnhubSearchResultWithExchange = FinnhubSearchResult & { exchange: string };
+        type CombinedSearchResult = FinnhubSearchResult | FinnhubSearchResultWithExchange;
 
-        let results: SearchResultWithExchange[] = [];
+        let results: CombinedSearchResult[] = [];
 
-        if (!trimmed) {
-            // Fetch top 10 popular symbols' profiles
+        if (!trimmedQuery) {
             const top = POPULAR_STOCK_SYMBOLS.slice(0, 10);
+
             const profiles = await Promise.all(
                 top.map(async (sym) => {
-                    try {
-                        const url = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(sym)}&token=${token}`;
-                        // Revalidate every hour
-                        const profile = await fetchJSON<FinnhubProfile2Response>(url, 3600);
-                        return { sym, profile };
-                    } catch (e) {
-                        console.error('Error fetching profile2 for', sym, e);
-                        return { sym, profile: undefined as FinnhubProfile2Response | undefined };
-                    }
-                })
-            );
+                    const symbol = sym.trim().toUpperCase();
+                    const url = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(symbol)}&token=${token}`;
+                    const profile = await fetchJSON<FinnhubProfile2Response>(url, 3600);
 
-            results = profiles
-                .map(({ sym, profile }) => {
-                    const symbol = sym.toUpperCase();
-                    const name = profile?.name || profile?.ticker;
-                    const exchange = profile?.exchange;
-                    if (!name) return undefined;
-                    const r: SearchResultWithExchange = {
+                    const nameFromProfile = profile?.name?.trim();
+                    const description = nameFromProfile ? nameFromProfile : symbol;
+                    const exchange = profile?.exchange?.trim() ? profile.exchange.trim() : 'US';
+
+                    const r: FinnhubSearchResultWithExchange = {
                         symbol,
-                        description: name,
+                        description,
                         displaySymbol: symbol,
                         type: 'Common Stock',
                         exchange,
                     };
                     return r;
                 })
-                .filter((x): x is SearchResultWithExchange => Boolean(x));
+            );
+
+            results = profiles;
         } else {
-            const url = `${FINNHUB_BASE_URL}/search?q=${encodeURIComponent(trimmed)}&token=${token}`;
+            const url = `${FINNHUB_BASE_URL}/search?q=${encodeURIComponent(trimmedQuery)}&token=${token}`;
             const data = await fetchJSON<FinnhubSearchResponse>(url, 1800);
-            results = Array.isArray(data?.result) ? data.result : [];
+            results = Array.isArray(data.result) ? data.result : [];
         }
 
-        const mapped: StockWithWatchlistStatus[] = results
+        return results
             .map((r) => {
-                const upper = (r.symbol || '').toUpperCase();
-                const name = r.description || upper;
-                const exchangeFromDisplay = typeof r.displaySymbol === 'string' ? r.displaySymbol : undefined;
-                const exchangeFromProfile = typeof r.exchange === 'string' ? r.exchange : undefined;
-                const exchange = exchangeFromDisplay || exchangeFromProfile || 'US';
-                const type = r.type || 'Stock';
+                const symbol = r.symbol.trim().toUpperCase();
+                if (!symbol) return null;
+
+                const name = r.description;
+                const exchange = r.displaySymbol?.trim() ? r.displaySymbol.trim() : 'US';
+                const type = r.type?.trim() ? r.type.trim() : 'Stock';
+
                 const item: StockWithWatchlistStatus = {
-                    symbol: upper,
+                    symbol,
                     name,
                     exchange,
                     type,
@@ -192,9 +185,8 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
                 };
                 return item;
             })
+            .filter((x): x is StockWithWatchlistStatus => x !== null)
             .slice(0, 15);
-
-        return mapped;
     } catch (err) {
         console.error('Error in stock search:', err);
         return [];
